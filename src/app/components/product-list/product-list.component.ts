@@ -15,33 +15,52 @@ export class ProductListComponent implements OnInit{
   currentCategoryName: string = "";
 
   constructor(private productService: ProductService,
-              private routes: ActivatedRoute ){}
+              private route: ActivatedRoute ){}
 
   ngOnInit(): void {
-    this.routes.paramMap.subscribe( () =>{
+    this.route.paramMap.subscribe( () =>{
       this.listProducts();
     })
   }
 
   listProducts(){
 
-    const hasCategoryId: boolean = this.routes.snapshot.paramMap.has('id');
+    const searchMode: boolean = this.route.snapshot.paramMap.has('keyword');
+
+    if(searchMode){
+      this.handleSearchProduct();
+    } else {
+      this.handleListProducts();
+    }
+    
+  }
+
+  handleListProducts(){
+
+    const hasCategoryId: boolean = this.route.snapshot.paramMap.has('id');
 
     if(hasCategoryId){
-      this.currentCategoryId = +this.routes.snapshot.paramMap.get('id')!;
-      this.currentCategoryName = this.routes.snapshot.paramMap.get('name')!;
+      this.currentCategoryId = +this.route.snapshot.paramMap.get('id')!;
+      this.currentCategoryName = this.route.snapshot.paramMap.get('name')!;
     } else {
       this.currentCategoryId = 1;
       this.currentCategoryName = 'Book';
     }
 
-    this.getProducts()
-  }
-
-  getProducts(){
     this.productService.getProductList(this.currentCategoryId).subscribe(
       data => { this.product = data }
     );
+  }
+
+  handleSearchProduct(){
+
+    const theKeyword: string = this.route.snapshot.paramMap.get('keyword')!;
+
+    this.productService.searchProducts(theKeyword).subscribe(
+      data => {
+        this.product = data
+      }
+    )
   }
 
 }
